@@ -1,9 +1,9 @@
 import base64
 import tempfile
 import whisper
-from fastapi import FastAPI, Header, HTTPException
+from fastapi import Body, FastAPI, Header, HTTPException
 from pydantic import BaseModel
-from fastapi import Body
+
 
 
 class VoiceRequest(BaseModel):
@@ -29,7 +29,7 @@ def detect_voice(
 
     # 2. Input validation
     audio_base64 = data.audio_base64
-    if not data or not data.audio_base64:
+    if not audio_base64:
         raise HTTPException(status_code=400, detail="Missing input")
 
     # 3. Decode Base64 safely
