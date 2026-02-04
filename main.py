@@ -1,45 +1,46 @@
+from fastapi import FastAPI, Header, HTTPException, Request
 import base64
 import tempfile
 import whisper
-from fastapi import Body, FastAPI, Header, HTTPException
-
 
 app = FastAPI()
 model = whisper.load_model("tiny")
 
-
 API_KEY = "ishu_guvi_voice_api_2026"
 
+
 @app.post("/detect-voice")
-def detect_voice(
-    audio_base64: str = Body(..., embed=True),
+async def detect_voice(
+    request: Request,
     x_api_key: str = Header(None)
 ):
-
     # 1. API key check
     if x_api_key != API_KEY:
         raise HTTPException(status_code=401, detail="Invalid API Key")
 
-    # 2. Input validation
+    # 2. Read raw JSON body
+    body = await request.json()
+
+    audio_base64 = body.get("audio_base64")
     if not audio_base64:
         raise HTTPException(status_code=400, detail="Missing input")
 
-    # 3. Decode Base64 safely
+    # 3. Decode base64
     try:
         audio_bytes = base64.b64decode(audio_base64)
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid base64 audio")
 
-    # 4. Save to temp MP3
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as temp_audio:
-        temp_audio.write(audio_bytes)
-        temp_path = temp_audio.name
+    # 4. Save to temp mp3
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as f:
+        f.write(audio_bytes)
+        temp_path = f.name
 
-    # 5. Detect language using Whisper
-    result = model.transcribe(temp_path, task="transcribe")
+    # 5. Language detection
+    result = model.transcribe(temp_path)
     detected_language = result["language"]
 
-    # 6. AI vs Human heuristic (safe demo logic)
+    # 6. AI vs Human logic
     if len(audio_bytes) < 50000:
         classification = "AI-generated"
         confidence = 0.82
@@ -49,7 +50,6 @@ def detect_voice(
         confidence = 0.76
         explanation = "Natural speech variations detected"
 
-    # 7. Final response
     return {
         "language": detected_language,
         "classification": classification,
