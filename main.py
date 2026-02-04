@@ -2,12 +2,6 @@ import base64
 import tempfile
 import whisper
 from fastapi import Body, FastAPI, Header, HTTPException
-from pydantic import BaseModel
-
-
-
-class VoiceRequest(BaseModel):
-    audio_base64: str
 
 
 app = FastAPI()
@@ -18,23 +12,21 @@ API_KEY = "ishu_guvi_voice_api_2026"
 
 @app.post("/detect-voice")
 def detect_voice(
-    data: VoiceRequest = Body(...),
+    audio_base64: str = Body(..., embed=True),
     x_api_key: str = Header(None)
 ):
-
 
     # 1. API key check
     if x_api_key != API_KEY:
         raise HTTPException(status_code=401, detail="Invalid API Key")
 
     # 2. Input validation
-    audio_base64 = data.audio_base64
     if not audio_base64:
         raise HTTPException(status_code=400, detail="Missing input")
 
     # 3. Decode Base64 safely
     try:
-        audio_bytes = base64.b64decode(audio_base64, validate=True)
+        audio_bytes = base64.b64decode(audio_base64)
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid base64 audio")
 
