@@ -21,9 +21,10 @@ async def detect_voice(
     # 2. Read raw JSON body
     body = await request.json()
 
-    audio_base64 = body.get("audio_base64")
+    audio_base64 = data.audio_base64.strip()
+
     if not audio_base64:
-        raise HTTPException(status_code=400, detail="Missing input")
+     raise HTTPException(status_code=400, detail="Missing input")
 
     # 3. Decode base64
     try:
