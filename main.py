@@ -17,6 +17,9 @@ class VoiceRequest(BaseModel):
     audio_format: str
     language: str
 
+    class Config:
+        allow_population_by_field_name = True
+
 # -------- Endpoint --------
 @app.post("/detect-voice")
 def detect_voice(
