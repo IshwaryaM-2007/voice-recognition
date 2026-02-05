@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Header, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 import random
 
 app = FastAPI(
@@ -13,12 +13,10 @@ API_KEY = "ishu_guvi_voice_api_2026"
 
 # -------- Request Model --------
 class VoiceRequest(BaseModel):
-    audio_base64: str = Field(..., alias="audioBase64")
-    audio_format: str
     language: str
+    audio_format: str
+    audio_base64: str | None = None
 
-    class Config:
-        allow_population_by_field_name = True
 
 # -------- Endpoint --------
 @app.post("/detect-voice")
@@ -30,10 +28,7 @@ def detect_voice(
     if x_api_key != API_KEY:
         raise HTTPException(status_code=401, detail="Invalid API Key")
 
-    # Basic validation (no decoding to avoid FFmpeg)
-    if not data.audio_base64 or len(data.audio_base64) < 50:
-        raise HTTPException(status_code=400, detail="Invalid or empty audio data")
-
+    
     # Mock AI detection logic (submission-safe)
     is_ai = random.choice([True, False])
 
