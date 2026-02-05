@@ -2,6 +2,7 @@ from fastapi import FastAPI, Header, HTTPException, Request
 import base64
 import tempfile
 import whisper
+import json
 
 app = FastAPI()
 model = whisper.load_model("tiny")
@@ -19,9 +20,12 @@ async def detect_voice(
         raise HTTPException(status_code=401, detail="Invalid API Key")
 
     # 2. Read raw JSON body
-    body = await request.json()
+    try:        
+        body = await request.json()
+    except:
+        raise HTTPException(status_code=400, detail="Invalid JSON body")
 
-    audio_base64 = data.audio_base64.strip()
+    audio_base64 = body.get("audio_base64")
 
     if not audio_base64:
      raise HTTPException(status_code=400, detail="Missing input")
@@ -39,7 +43,7 @@ async def detect_voice(
 
     # 5. Language detection
     result = model.transcribe(temp_path)
-    detected_language = result["language"]
+    language = result.get("language", "unknown")
 
     # 6. AI vs Human logic
     if len(audio_bytes) < 50000:
@@ -52,7 +56,7 @@ async def detect_voice(
         explanation = "Natural speech variations detected"
 
     return {
-        "language": detected_language,
+        "language":language,
         "classification": classification,
         "confidence": confidence,
         "explanation": explanation
