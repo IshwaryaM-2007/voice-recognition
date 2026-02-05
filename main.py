@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Header, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 import random
 
 app = FastAPI(
@@ -14,8 +14,20 @@ API_KEY = "ishu_guvi_voice_api_2026"
 # -------- Request Model --------
 class VoiceRequest(BaseModel):
     language: str
-    audio_format: str
-    audio_base64: str | None = None
+
+    audio_base64: str | None = Field(
+        default=None,
+        alias="audioBase64"
+    )
+
+    audio_format: str | None = Field(
+        default=None,
+        alias="audioFormat"
+    )
+
+    class Config:
+        allow_population_by_field_name = True
+        allow_population_by_alias = True
 
 
 # -------- Endpoint --------
