@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Header, HTTPException
 from pydantic import BaseModel, Field
+from typing import Dict, Any
 import random
 
 app = FastAPI(
@@ -12,30 +13,15 @@ API_KEY = "ishu_guvi_voice_api_2026"
 
 
 # -------- Request Model --------
-class VoiceRequest(BaseModel):
-    language: str
-
-    audio_base64: str | None = Field(
-        default=None,
-        alias="audioBase64"
-    )
-
-    audio_format: str | None = Field(
-        default=None,
-        alias="audioFormat"
-    )
-
-    class Config:
-        allow_population_by_field_name = True
-        allow_population_by_alias = True
 
 
 # -------- Endpoint --------
 @app.post("/detect-voice")
 def detect_voice(
-    data: VoiceRequest,
+    data: Dict[str, Any],
     x_api_key: str = Header(None, alias="X-API-KEY")
 ):
+
     # API key validation
     if x_api_key != API_KEY:
         raise HTTPException(status_code=401, detail="Invalid API Key")
@@ -59,8 +45,10 @@ def detect_voice(
             "suggest human speech characteristics."
         )
 
+    language = data.get("language", "English")
+
     return {
-        "language": data.language,
+        "language": language,
         "classification": classification,
         "confidence": confidence,
         "explanation": explanation
