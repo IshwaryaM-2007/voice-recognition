@@ -3,5 +3,5 @@ services:
     name: voice-recognition-api # Use your actual Render service name
     runtime: python
     plan: free
-    buildCommand: "pip install -r requirements.txt && apt-get update && apt-get install -y ffmpeg"
+    buildCommand: "apt-get update && apt-get install -y ffmpeg && pip install -r requirements.txt"
     startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
