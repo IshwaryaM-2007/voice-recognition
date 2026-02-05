@@ -3,18 +3,19 @@ import tempfile
 import whisper
 import os
 from fastapi import FastAPI, Header, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 app = FastAPI()
 # "base" is better for multilingual (Tamil, Telugu, etc.) than "tiny"
-model = whisper.load_model("base") 
+model = whisper.load_model("tiny") 
 
 API_KEY = "ishu_guvi_voice_api_2026"
 
 class VoiceRequest(BaseModel):
-    audio_base64: str
-    audio_format: str
-    language: str
+    audio_base64: str = Field(..., alias="Audio Base64 Format")
+    audio_format: str = Field(..., alias="Audio Format")
+    language: str = Field(..., alias="Language")
+ 
 
     class Config:
         populate_by_name = True  # Allows using both the alias and the original name
