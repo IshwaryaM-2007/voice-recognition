@@ -16,6 +16,9 @@ class VoiceRequest(BaseModel):
     audio_format: str
     language: str
 
+    class Config:
+        populate_by_name = True  # Allows using both the alias and the original name
+
 @app.post("/detect-voice")
 def detect_voice(data: VoiceRequest, x_api_key: str = Header(None)):
     if x_api_key != API_KEY:
