@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Header, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 import random
 
 app = FastAPI(
@@ -13,10 +13,9 @@ API_KEY = "ishu_guvi_voice_api_2026"
 
 # -------- Request Model --------
 class VoiceRequest(BaseModel):
-    audio_base64: str
+    audio_base64: str = Field(..., alias="audioBase64")
     audio_format: str
     language: str
-
 
 # -------- Endpoint --------
 @app.post("/detect-voice")
