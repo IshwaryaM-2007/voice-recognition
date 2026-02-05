@@ -12,38 +12,40 @@ API_KEY = "ishu_guvi_voice_api_2026"
 
 class VoiceRequest(BaseModel):
     audio_base64: str
+    language: str | None = None
+    audio_format: str | None = None
 
 
 @app.post("/detect-voice")
 def detect_voice(
     data: VoiceRequest,
-    x_api_key: str = Header(...)
+    x_api_key: str = Header(None)
 ):
-    # 1. API key check
+    # API key check
     if x_api_key != API_KEY:
         raise HTTPException(status_code=401, detail="Invalid API Key")
 
-    # 2. Input validation (THIS is the key fix)
+    # Validate audio
     audio_base64 = data.audio_base64.strip()
     if not audio_base64:
         raise HTTPException(status_code=400, detail="Missing input")
 
-    # 3. Decode Base64
+    # Decode base64
     try:
         audio_bytes = base64.b64decode(audio_base64)
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid base64 audio")
 
-    # 4. Save temp MP3
+    # Save temp audio
     with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as f:
         f.write(audio_bytes)
         temp_path = f.name
 
-    # 5. Language detection
+    # Whisper language detection
     result = model.transcribe(temp_path)
-    language = result.get("language", "unknown")
+    detected_language = result.get("language", "unknown")
 
-    # 6. AI vs Human (demo heuristic)
+    # AI vs Human (demo logic)
     if len(audio_bytes) < 50000:
         classification = "AI-generated"
         confidence = 0.82
@@ -54,7 +56,7 @@ def detect_voice(
         explanation = "Natural speech variations detected"
 
     return {
-        "language": language,
+        "language": detected_language,
         "classification": classification,
         "confidence": confidence,
         "explanation": explanation
